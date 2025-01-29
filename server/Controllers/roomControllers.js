@@ -1,7 +1,21 @@
 const Room = require('../Models/Room');
- const createRoom = async (req, res) => {
+
+const generateRoomCode = async () => {
+  let roomCode;
+  let roomExists = true;
+  while (roomExists) {
+    roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const existingRoom = await Room.findOne({ code: roomCode });
+    if (!existingRoom) {
+      roomExists = false;
+    }
+  }
+  return roomCode;
+};
+
+const createRoom = async (req, res) => {
   try {
-    const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const roomCode = await generateRoomCode();
     const room = new Room({
       code: roomCode,
       messages: []
@@ -13,16 +27,16 @@ const Room = require('../Models/Room');
   }
 };
 
- const getRoom = async (req, res) => {
+const getRoom = async (req, res) => {
   try {
     const room = await Room.findOne({ code: req.params.roomCode });
     if (!room) {
       return res.status(404).json({ error: 'Room not found' });
     }
-    res.json({ messages: room.messages });
+    res.json({ message: 'Room found successfully', messages: room.messages });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-module.exports = {createRoom, getRoom};
+module.exports = { createRoom, getRoom };
