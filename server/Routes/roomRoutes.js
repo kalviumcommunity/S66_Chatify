@@ -4,6 +4,6 @@ const { createRoom,getRoom } = require('../Controllers/roomControllers');
 const router = express.Router();
 
 router.post('/create', createRoom);
-router.get('/:roomCode', getRoom);
+router.get('/roomcode/:roomCode', getRoom);
 
 module.exports = router;
