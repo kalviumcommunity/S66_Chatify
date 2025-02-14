@@ -19,11 +19,14 @@ app.post('/ping',(req,res)=>{
 })
 
 app.get('/', (req, res) => {
-    const dbStatus = mongoose.connection.readyState;
-    const statusMessage = dbStatus === 1 ? 'Database Connected' : 'Database Not Connected';
-    res.send(statusMessage);
-});
-
+    try {
+        const dbStatus = mongoose.connection.readyState;
+        const statusMessage = dbStatus === 1 ? 'Database Connected' : 'Database Not Connected';
+        res.send(statusMessage);
+    } catch (error) {
+        res.status(500).send('Error checking database status');
+    }
+     });
 app.listen(port,()=>{
     console.log(`Server is running on port ${port}`)
 })
