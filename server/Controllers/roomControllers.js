@@ -39,4 +39,18 @@ const getRoom = async (req, res) => {
   }
 };
 
-module.exports = { createRoom, getRoom };
+const deleteRoom = async(req,res)=>{
+  try {
+    const room = await Room.findOne({code:req.params.roomCode})
+    if (!room){
+      return res.status(404).json({error:"Room not found"})
+    }
+    Room.findByIdAndDelete( room._id)
+    res.status(200).json({message:"Room deleted succesfully"})
+  } catch (error) {
+    res.status(500).json({error:error.message})
+    
+  }
+}
+
+module.exports = { createRoom, getRoom,deleteRoom };
