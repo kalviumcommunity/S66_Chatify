@@ -1,1 +1,19 @@
 @import "tailwindcss";
+
+@layer base {
+    body {
+      @apply bg-[#16161A] text-white;
+    }
+  }
+  
+  .gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-400;
+  }
+  
+  .hero-gradient {
+    background: radial-gradient(circle at center, rgba(124, 58, 237, 0.15) 0%, rgba(16, 16, 26, 0) 70%);
+  }
+  
+  .feature-card {
+    @apply relative p-6 rounded-xl bg-[#242629] border border-[#2e2e35] transition-all duration-300 hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/10;
+  }
