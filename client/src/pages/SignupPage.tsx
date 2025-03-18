@@ -1,7 +1,7 @@
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import { Eye, EyeOff, Mail, Lock, AlertCircle, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
+import {supabase} from '../../config/supabaseClient'
 interface FormData {
   email: string;
   password: string;
@@ -88,9 +88,12 @@ const SignupPage: React.FC = () => {
   };
   
   // Handle social media login
-  const handleSocialLogin = (provider: string) => {
-    console.log(`Signing up with ${provider}`);
-    // Implementation for social login would go here
+  const handleSocialLogin = async () => {
+   const {error}= await supabase.auth.signInWithOAuth({
+    provider:"google"
+   })
+   if (error) alert(error.message)
+    
   };
 
   return (
@@ -258,7 +261,7 @@ const SignupPage: React.FC = () => {
             {/* Google login */}
             <button
               type="button"
-              onClick={() => handleSocialLogin('Google')}
+              onClick={handleSocialLogin}
               className="w-full inline-flex justify-center py-2 px-4 border border-[#27272A] rounded-lg shadow-sm bg-[#16161A] text-sm font-medium text-[#5C5C5C] hover:bg-[#27272A]"
             >
               <svg width="20" height="20" fill="none" viewBox="0 0 20 20">
