@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { MessageSquare, Users, Lock, Zap, ArrowRight, X } from 'lucide-react';
+import axios from 'axios';
 
 function LandingPage() {
   const [roomCode, setRoomCode] = useState('');
@@ -17,9 +18,19 @@ function LandingPage() {
     }
   };
 
+  const createRoom = async () => {
+    try {
+      const response = await axios.post('http://localhost:3000/create');
+      setRoomCode(response.data.roomCode);
+      console.log(response.data.roomCode)
+      setShowLogin(true);
+    } catch (error) {
+      console.error('Error creating room:', error);
+    }
+  };
+  
   const handleCreateRoom = () => {
-    setLoginData(prev => ({ ...prev, roomCode: Math.random().toString(36).substring(2, 8) }));
-    setShowLogin(true);
+    createRoom();
   };
 
   const handleLogin = (e: React.FormEvent) => {
@@ -46,8 +57,9 @@ function LandingPage() {
           <div className="text-center mb-8">
             <h2 className="text-2xl font-bold mb-2">Join Chat Room</h2>
             <p className="text-gray-400">
-              {loginData.roomCode ? `Room Code: ${loginData.roomCode}` : 'Create a new room'}
-            </p>
+  {roomCode ? `Room Code: ${roomCode}` : 'Create a new room'}
+</p>
+
           </div>
 
           <form onSubmit={handleLogin} className="space-y-6">
