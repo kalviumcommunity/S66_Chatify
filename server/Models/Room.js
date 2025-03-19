@@ -1,35 +1,3 @@
-// const mongoose = require('mongoose');
-
-// const messageSchema = new mongoose.Schema({
-//   message: {
-//     type: String,
-//     required: true
-//   },
-//   user: {
-//     type: String,
-//     required: true
-//   },
-//   timestamp: {
-//     type: Date,
-//     default: Date.now
-//   }
-// });
-
-// const roomSchema = new mongoose.Schema({
-//   code: {
-//     type: String,
-//     required: true,
-//     unique: true
-//   },
-//   messages: [messageSchema],
-//   createdAt: {
-//     type: Date,
-//     default: Date.now
-//   }
-// });
-
-// const Room = mongoose.model('Room', roomSchema);  
-// module.exports = Room;
 const mongoose = require('mongoose');
 
 const messageSchema = new mongoose.Schema({
@@ -55,7 +23,7 @@ const roomSchema = new mongoose.Schema({
   code: {
     type: String,
     required: true,
-    unique: true
+    unique: true // This implicitly creates an index
   },
   messages: [messageSchema],
   createdAt: {
@@ -68,7 +36,7 @@ const roomSchema = new mongoose.Schema({
   }
 });
 
-roomSchema.index({ code: 1 });
+// Remove the duplicate index definition for 'code'
 roomSchema.index({ createdAt: 1 });
 
 const Room = mongoose.model('Room', roomSchema);
