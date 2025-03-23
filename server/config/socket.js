@@ -12,10 +12,10 @@ const setupSocket = (server) =>{
         } );
 
         socket.on('sendMessage' , (data)=>{
-            io.to(data.roomCode).emit('reciveMessage', data )
+            io.to(data.roomCode).emit('receiveMessage', data )
         } )
 
-        socket.om('disconnect', ()=>{
+        socket.on('disconnect', ()=>{
             console.log('User disconnected',socket.id)
         } )
     } )

@@ -1,22 +1,17 @@
-
-// })
 const express = require('express');
+const cors = require('cors');
 const http = require('http');
 const mongoose = require('mongoose');
 const socketIo = require('socket.io');
 const roomRoutes = require('./Routes/roomRoutes');
 const connectDB = require('./config/db');
-const setupSocket = require('./config/socket')
+const setupSocket = require('./config/socket');
 
 const app = express();
-const server = http.createServer(app); 
-const io = socketIo(server, {
-    cors: {
-      origin: 'http://localhost:5173/chat', // Replace with your client's URL
-      methods: ['GET', 'POST'],
-    },
-  });
+const server = http.createServer(app);  // Create HTTP server
+const io = setupSocket(server); // Attach Socket.io to the server
 
+app.use(cors());
 require('dotenv').config();
 connectDB();
 

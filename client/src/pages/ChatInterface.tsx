@@ -1,186 +1,3 @@
-// import React, { useEffect, useState } from 'react';
-// import { useLocation } from 'react-router-dom';
-// import { io } from 'socket.io-client';
-
-// const ChatInterface: React.FC = () => {
-//   const location = useLocation();
-//   const { username, roomCode } = location.state as { username: string; roomCode: string };
-
-//   const [messages, setMessages] = useState<{ user: string; message: string }[]>([]);
-//   const [input, setInput] = useState<string>('');
-//   const socket = io('http://localhost:3000');
-
-//   useEffect(() => {
-//     // Join the room when the component mounts
-//     socket.emit('joinRoom', roomCode);
-
-//     // Listen for new messages
-//     socket.on('reciveMessage', (data) => {
-//       setMessages((prevMessages) => [...prevMessages, data]);
-//     });
-
-//     // Cleanup on unmount
-//     return () => {
-//       socket.disconnect();
-//     };
-//   }, [roomCode]);
-
-//   const sendMessage = () => {
-//     if (input.trim()) {
-//       // Emit the message to the server
-//       socket.emit('sendMessage', { roomCode, user: username, message: input });
-//       setInput('');
-//     }
-//   };
-
-//   return (
-//     <div>
-//       <h2>Chat Room: {roomCode}</h2>
-//       <div>
-//         {messages.map((msg, index) => (
-//           <div key={index}>
-//             <strong>{msg.user}:</strong> {msg.message}
-//           </div>
-//         ))}
-//       </div>
-//       <input
-//         type="text"
-//         value={input}
-//         onChange={(e) => setInput(e.target.value)}
-//         onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-//       />
-//       <button onClick={sendMessage}>Send</button>
-//     </div>
-//   );
-// };
-
-// export default ChatInterface;
-
-// import React, { useEffect, useState } from 'react';
-// import { useLocation } from 'react-router-dom';
-// import { io, Socket } from 'socket.io-client';
-
-// const ChatInterface: React.FC = () => {
-//   const location = useLocation();
-//   const { username, roomCode } = location.state as { username: string; roomCode: string };
-
-//   const [messages, setMessages] = useState<{ user: string; message: string }[]>([]);
-//   const [input, setInput] = useState<string>('');
-//   const [socket, setSocket] = useState<Socket | null>(null);
-
-//   useEffect(() => {
-//     const newSocket = io('http://localhost:3000');
-//     setSocket(newSocket);
-
-//     newSocket.emit('joinRoom', roomCode);
-
-//     newSocket.on('receiveMessage', (data) => {  // ✅ Fixed typo here
-//       setMessages((prevMessages) => [...prevMessages, data]);
-//     });
-
-//     return () => {
-//       newSocket.off('receiveMessage'); // ✅ Remove event listener
-//       newSocket.disconnect();
-//     };
-//   }, [roomCode]);
-
-//   const sendMessage = () => {
-//     if (input.trim() && socket) {
-//       socket.emit('sendMessage', { roomCode, user: username, message: input });
-//       setInput('');
-//     }
-//   };
-
-//   return (
-//     <div>
-//       <h2>Chat Room: {roomCode}</h2>
-//       <div>
-//         {messages.map((msg, index) => (
-//           <div key={index}>
-//             <strong>{msg.user}:</strong> {msg.message}
-//           </div>
-//         ))}
-//       </div>
-//       <input
-//         type="text"
-//         value={input}
-//         onChange={(e) => setInput(e.target.value)}
-//         onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-//       />
-//       <button onClick={sendMessage}>Send</button>
-//     </div>
-//   );
-// };
-
-// export default ChatInterface;
-
-// import React, { useEffect, useState } from 'react';
-// import { useLocation } from 'react-router-dom';
-// import { io, Socket } from 'socket.io-client';
-
-// const ChatInterface: React.FC = () => {
-//   const location = useLocation();
-//   const { username, roomCode } = location.state as { username: string; roomCode: string };
-
-//   const [messages, setMessages] = useState<{ user: string; message: string }[]>([]);
-//   const [input, setInput] = useState<string>('');
-//   const [socket, setSocket] = useState<Socket | null>(null);
-
-//   useEffect(() => {
-//     const newSocket = io('http://localhost:3000');
-//     setSocket(newSocket);
-
-//     newSocket.on('connect', () => {
-//       console.log('Connected to server');
-//     });
-
-//     newSocket.on('connect_error', (err) => {
-//       console.error('Connection error:', err);
-//     });
-
-//     newSocket.emit('joinRoom', roomCode);
-
-//     newSocket.on('receiveMessage', (data) => {
-//       console.log('Received message:', data); // Log received messages
-//       setMessages((prevMessages) => [...prevMessages, data]);
-//     });
-
-//     return () => {
-//       newSocket.off('receiveMessage');
-//       newSocket.disconnect();
-//     };
-//   }, [roomCode]);
-
-//   const sendMessage = () => {
-//     if (input.trim() && socket) {
-//       socket.emit('sendMessage', { roomCode, user: username, message: input });
-//       setInput('');
-//     }
-//   };
-
-//   return (
-//     <div>
-//       <h2>Chat Room: {roomCode}</h2>
-//       <div>
-//         {messages.map((msg, index) => (
-//           <div key={index}>
-//             <strong>{msg.user}:</strong> {msg.message}
-//           </div>
-//         ))}
-//       </div>
-//       <input
-//         type="text"
-//         value={input}
-//         onChange={(e) => setInput(e.target.value)}
-//         onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-//       />
-//       <button onClick={sendMessage}>Send</button>
-//     </div>
-//   );
-// };
-
-// export default ChatInterface;
-
 import React, { useEffect, useState, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
@@ -196,27 +13,28 @@ const ChatInterface: React.FC = () => {
   useEffect(() => {
     const newSocket = io('http://localhost:3000');
     setSocket(newSocket);
-    
+  
     newSocket.on('connect', () => {
-      console.log('Connected to server');
+      console.log('✅ Connected to server');
+      console.log(`ℹ️ Joining room: ${roomCode}`);
+      newSocket.emit('joinRoom', roomCode);
     });
-    
+  
     newSocket.on('connect_error', (err) => {
-      console.error('Connection error:', err);
+      console.error('❌ Connection error:', err);
     });
-    
-    newSocket.emit('joinRoom', roomCode);
-    
+  
     newSocket.on('receiveMessage', (data) => {
-      console.log('Received message:', data);
+      console.log('📩 Received message:', data);
       setMessages((prevMessages) => [...prevMessages, data]);
     });
-    
+  
     return () => {
       newSocket.off('receiveMessage');
       newSocket.disconnect();
     };
   }, [roomCode]);
+  
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -225,8 +43,9 @@ const ChatInterface: React.FC = () => {
 
   const sendMessage = () => {
     if (input.trim() && socket) {
-      socket.emit('sendMessage', { roomCode, user: username, message: input });
-      console.log('Sending message:', { roomCode, user: username, message: input });x
+      const messageData = { roomCode, user: username, message: input };
+      console.log('📤 Sending message:', messageData);
+      socket.emit('sendMessage', messageData);
       setInput('');
     }
   };
@@ -260,7 +79,7 @@ const ChatInterface: React.FC = () => {
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+          onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
           style={styles.input}  
           placeholder="Type a message..."
         />
@@ -275,6 +94,7 @@ const ChatInterface: React.FC = () => {
     </div>
   );
 };
+
 
 // Styles
 const styles = {
