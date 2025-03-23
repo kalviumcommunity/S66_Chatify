@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import { MessageSquare, Users, Lock, Zap, ArrowRight, X } from 'lucide-react';
 import axios from 'axios';
 
@@ -10,33 +11,41 @@ function LandingPage() {
     username: '',
     roomCode: ''
   });
+  const navigate = useNavigate();
 
-  const handleJoinRoom = () => {
+  const handleJoinRoom = async () => {
     if (roomCode.trim()) {
       setLoginData(prev => ({ ...prev, roomCode }));
-      setShowLogin(true);
+      try {
+        const ress = await axios.get(`http://localhost:3000/roomcode/${roomCode}`);
+        console.log(ress)
+        setShowLogin(true);
+      } catch (error) {
+        console.error('Error joining room:', error);
+      }
     }
   };
+  
 
   const createRoom = async () => {
     try {
       const response = await axios.post('http://localhost:3000/create');
       setRoomCode(response.data.roomCode);
-      console.log(response.data.roomCode)
       setShowLogin(true);
     } catch (error) {
       console.error('Error creating room:', error);
     }
   };
-  
+
   const handleCreateRoom = () => {
     createRoom();
   };
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle login logic here
-    console.log('Logging in with:', loginData);
+    // Navigate to ChatInterface with username and roomCode
+    navigate('/chat', { state: { username: loginData.username, roomCode:roomCode } });
+    console.log(loginData.username  , roomCode )
   };
 
   const navigateToSignIn = () => {
@@ -57,9 +66,8 @@ function LandingPage() {
           <div className="text-center mb-8">
             <h2 className="text-2xl font-bold mb-2">Join Chat Room</h2>
             <p className="text-gray-400">
-  {roomCode ? `Room Code: ${roomCode}` : 'Create a new room'}
-</p>
-
+              {roomCode ? `Room Code: ${roomCode}` : 'Create a new room'}
+            </p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-6">
