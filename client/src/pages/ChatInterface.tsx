@@ -13,42 +13,53 @@ const ChatInterface: React.FC = () => {
   useEffect(() => {
     const newSocket = io('http://localhost:3000');
     setSocket(newSocket);
-  
+
     newSocket.on('connect', () => {
       console.log('✅ Connected to server');
       console.log(`ℹ️ Joining room: ${roomCode}`);
       newSocket.emit('joinRoom', roomCode);
+
+      // Fetch previous messages when joining a room
+      newSocket.emit('getPreviousMessages', roomCode);
     });
-  
+
     newSocket.on('connect_error', (err) => {
       console.error('❌ Connection error:', err);
     });
-  
+
+    // Handle receiving previous messages
+    newSocket.on('previousMessages', (messages) => {
+      console.log('📜 Previous messages:', messages);
+      setMessages(messages);
+    });
+
+    // Handle receiving new messages
     newSocket.on('receiveMessage', (data) => {
       console.log('📩 Received message:', data);
       setMessages((prevMessages) => [...prevMessages, data]);
     });
-  
+
     return () => {
       newSocket.off('receiveMessage');
+      newSocket.off('previousMessages');
       newSocket.disconnect();
     };
-  }, [roomCode]);
-  
+}, [roomCode]);
 
-  // Auto-scroll to bottom when new messages arrive
-  useEffect(() => {
+// Auto-scroll to bottom when new messages arrive
+useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+}, [messages]);
 
-  const sendMessage = () => {
+const sendMessage = () => {
     if (input.trim() && socket) {
       const messageData = { roomCode, user: username, message: input };
       console.log('📤 Sending message:', messageData);
       socket.emit('sendMessage', messageData);
       setInput('');
     }
-  };
+};
+
 
   return (
     <div style={styles.container}>
