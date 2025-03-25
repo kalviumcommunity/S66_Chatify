@@ -11,7 +11,7 @@ const ChatInterface: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const newSocket = io('http://localhost:3000');
+    const newSocket = io('https://s66-chatify.onrender.com');
     setSocket(newSocket);
 
     newSocket.on('connect', () => {
