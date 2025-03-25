@@ -75,7 +75,7 @@ const http = require('http');
 const mongoose = require('mongoose');
 const roomRoutes = require('./Routes/roomRoutes');
 const connectDB = require('./config/db');
-const setupSocket = require('./socket');
+const setupSocket = require('./config/socket');
 
 const app = express();
 const server = http.createServer(app);
