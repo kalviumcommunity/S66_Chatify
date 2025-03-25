@@ -8,6 +8,7 @@ const connectDB = require('./config/db');
 const setupSocket = require('./config/socket');
 
 const app = express();
+
 const server = http.createServer(app);  // Create HTTP server
 const io = setupSocket(server); // Attach Socket.io to the server
 
