@@ -1,5 +1,5 @@
 import React, { useState, ChangeEvent, FormEvent } from 'react';
-import { Eye, EyeOff, Mail, Lock, AlertCircle, User } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {supabase} from '../../config/supabaseClient'
 interface FormData {
