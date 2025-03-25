@@ -1,28 +1,32 @@
-// import { createClient } from '@supabase/supabase-js'
 
-// declare global {
-//   interface ImportMeta {
-//     env: {
-//       VITE_SUPABASE_URL: string
-//       VITE_SUPABASE_ANON_KEY: string
-//     }
-//   }
+// import { createClient } from '@supabase/supabase-js';
+
+// interface ImportMetaEnv {
+//   VITE_SUPABASE_URL: string;
+//   VITE_SUPABASE_ANON_KEY: string;
 // }
 
-// const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-// const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+// interface ImportMeta {
+//   readonly env: ImportMetaEnv;
+// }
 
-// export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+// const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+// const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+// export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
 // filepath: /home/zape777/Documents/Chatify/client/config/supabaseClient.ts
 import { createClient } from '@supabase/supabase-js';
 
-interface ImportMetaEnv {
-  VITE_SUPABASE_URL: string;
-  VITE_SUPABASE_ANON_KEY: string;
-}
+declare global {
+  interface ImportMetaEnv {
+    VITE_SUPABASE_URL: string;
+    VITE_SUPABASE_ANON_KEY: string;
+  }
 
-interface ImportMeta {
-  env: ImportMetaEnv;
+  interface ImportMeta {
+    readonly env: ImportMetaEnv;
+  }
 }
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;

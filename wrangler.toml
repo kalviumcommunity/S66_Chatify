@@ -1,4 +1,0 @@
-name = "chatify"
-
-[build]
-command = "npm run build"
