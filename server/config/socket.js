@@ -23,6 +23,7 @@ const setupSocket = (server) => {
         });
 
         socket.on('sendMessage', async (data) => {
+            console.log("Received sendMessage event:", data);
             const { roomCode, user, message } = data;
 
             // Save message to MongoDB
@@ -38,6 +39,7 @@ const setupSocket = (server) => {
 
                 // Send message to all users in the room
                 io.to(roomCode).emit('receiveMessage', { user, message });
+                console.log(`Broadcasting receiveMessage to room ${roomCode}:`, { user, message });
             } catch (error) {
                 console.error('Error saving message:', error);
             }
