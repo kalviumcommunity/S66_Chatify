@@ -17,7 +17,7 @@ function LandingPage() {
     if (roomCode.trim()) {
       setLoginData(prev => ({ ...prev, roomCode }));
       try {
-        const ress = await axios.get(`http://localhost:3000/roomcode/${roomCode}`);
+        const ress = await axios.get(`https://s66-chatify.onrender.com/roomcode/${roomCode}`);
         console.log(ress)
         setShowLogin(true);
       } catch (error) {
@@ -29,7 +29,7 @@ function LandingPage() {
 
   const createRoom = async () => {
     try {
-      const response = await axios.post('http://localhost:3000/create');
+      const response = await axios.post('https://s66-chatify.onrender.com/create');
       setRoomCode(response.data.roomCode);
       setShowLogin(true);
     } catch (error) {
