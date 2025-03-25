@@ -20,7 +20,7 @@ const ChatInterface: React.FC = () => {
       newSocket.emit('joinRoom', roomCode);
 
       // Fetch previous messages when joining a room
-      newSocket.emit('getPreviousMessages', roomCode);
+      // newSocket.emit('getPreviousMessages', roomCode);
     });
 
     newSocket.on('connect_error', (err) => {
@@ -28,10 +28,11 @@ const ChatInterface: React.FC = () => {
     });
 
     // Handle receiving previous messages
-    newSocket.on('previousMessages', (messages) => {
-      console.log('📜 Previous messages:', messages);
-      setMessages(messages);
+    newSocket.on('previousMessages', (prevMsgs) => {
+      console.log('📜 Previous messages:', prevMsgs);
+      setMessages((existingMsgs) => [...prevMsgs, ...existingMsgs]); 
     });
+    
 
     // Handle receiving new messages
     newSocket.on('receiveMessage', (data) => {

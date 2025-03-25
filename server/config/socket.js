@@ -10,17 +10,21 @@ const setupSocket = (server) => {
         socket.on('joinRoom', async (roomCode) => {
             socket.join(roomCode);
             console.log(`User ${socket.id} joined the room ${roomCode}`);
-
+        
             // Fetch previous messages from MongoDB
             try {
                 const room = await Room.findOne({ code: roomCode });
                 if (room) {
+                    console.log('✅ Sending previous messages:', room.messages);
                     socket.emit('previousMessages', room.messages);
+                } else {
+                    console.log('⚠️ No messages found for this room.');
                 }
             } catch (error) {
-                console.error('Error fetching messages:', error);
+                console.error('❌ Error fetching messages:', error);
             }
         });
+        
 
         socket.on('sendMessage', async (data) => {
             console.log("Received sendMessage event:", data);
