@@ -1,127 +1,104 @@
-
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
-import { MessageSquare, Users, Lock, Zap, ArrowRight, X } from 'lucide-react';
-import axios from 'axios';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { MessageSquare, Users, Lock, Zap, ArrowRight, Loader2 } from 'lucide-react';
+import axios, { AxiosResponse } from 'axios';
+import { supabase } from '../../config/supabaseClient'; // Import Supabase client
 
 function LandingPage() {
   const [roomCode, setRoomCode] = useState('');
-  const [showLogin, setShowLogin] = useState(false);
-  const [loginData, setLoginData] = useState({
-    username: '',
-    roomCode: ''
-  });
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
+  // Helper to get token and make authenticated requests
+  const makeAuthenticatedRequest = async (
+    url: string, 
+    method: 'get' | 'post' = 'get', 
+    data: any = null
+  ): Promise<AxiosResponse | null> => {
+    setIsLoading(true);
+    
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const session = sessionData.session;
+      
+      if (!session) {
+        navigate('/signin', { state: { intent: method === 'post' ? 'create' : 'join', roomCode } });
+        return null;
+      }
+
+      const token = session.access_token;
+      const response = await axios({
+        url,
+        method,
+        data,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return response;
+    } catch (error: any) {
+      console.error(`Error in ${method} request:`, error);
+      if (error.response?.status === 401) {
+        navigate('/signin', { state: { intent: method === 'post' ? 'create' : 'join', roomCode } });
+      }
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle joining a room
   const handleJoinRoom = async () => {
-    if (roomCode.trim()) {
-      setLoginData(prev => ({ ...prev, roomCode }));
-      try {
-        const ress = await axios.get(`https://s66-chatify.onrender.com/roomcode/${roomCode}`);
-        console.log(ress)
-        setShowLogin(true);
-      } catch (error) {
-        console.error('Error joining room:', error);
+    if (!roomCode.trim() || isLoading) return;
+
+    const response = await makeAuthenticatedRequest(`https://s66-chatify.onrender.com/roomcode/${roomCode}`);
+    if (response) {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const session = sessionData.session;
+      
+      if (session && session.user) {
+        const username = session.user.user_metadata?.full_name || session.user.email;
+        navigate('/chat', { state: { username, roomCode } });
       }
     }
   };
-  
 
-  const createRoom = async () => {
-    try {
-      const response = await axios.post('https://s66-chatify.onrender.com/create');
-      setRoomCode(response.data.roomCode);
-      setShowLogin(true);
-    } catch (error) {
-      console.error('Error creating room:', error);
+  // Handle creating a room
+  const handleCreateRoom = async () => {
+    if (isLoading) return;
+    
+    const response = await makeAuthenticatedRequest('https://s66-chatify.onrender.com/create', 'post');
+    if (response) {
+      const newRoomCode = response.data.roomCode;
+      const { data: sessionData } = await supabase.auth.getSession();
+      const session = sessionData.session;
+      
+      if (session && session.user) {
+        const username = session.user.user_metadata?.full_name || session.user.email;
+        setRoomCode(newRoomCode);
+        navigate('/chat', { state: { username, roomCode: newRoomCode } });
+      }
     }
   };
 
-  const handleCreateRoom = () => {
-    createRoom();
-  };
-
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Navigate to ChatInterface with username and roomCode
-    navigate('/chat', { state: { username: loginData.username, roomCode:roomCode } });
-    console.log(loginData.username  , roomCode )
-  };
-
-  const navigateToSignIn = () => {
-    window.location.href = '/signin';
-  };
-
-  if (showLogin) {
+  // Loading overlay component
+  const LoadingOverlay = () => {
+    if (!isLoading) return null;
+    
     return (
-      <div className="min-h-screen bg-[#16161A] flex items-center justify-center p-4">
-        <div className="w-full max-w-md bg-[#242629] rounded-xl shadow-xl p-8 relative">
-          <button
-            onClick={() => setShowLogin(false)}
-            className="absolute right-4 top-4 text-gray-400 hover:text-white transition-colors"
-          >
-            <X size={24} />
-          </button>
-          
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold mb-2">Join Chat Room</h2>
-            <p className="text-gray-400">
-              {roomCode ? `Room Code: ${roomCode}` : 'Create a new room'}
-            </p>
-          </div>
-
-          <form onSubmit={handleLogin} className="space-y-6">
-            <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-300 mb-2">
-                Username
-              </label>
-              <input
-                id="username"
-                type="text"
-                value={loginData.username}
-                onChange={(e) => setLoginData(prev => ({ ...prev, username: e.target.value }))}
-                className="w-full px-4 py-3 rounded-lg bg-[#16161A] border border-[#2e2e35] focus:outline-none focus:border-purple-500 text-white placeholder-gray-500"
-                placeholder="Enter your username"
-                required
-              />
-            </div>
-
-            <button
-              type="submit"
-              className="w-full px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-medium transition-colors"
-            >
-              Join Chat
-            </button>
-
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-600"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-[#242629] text-gray-400">or</span>
-              </div>
-            </div>
-
-            <div className="text-center">
-              <p className="text-gray-400 mb-4">
-                Want to save your chat history?
-              </p>
-              <button
-                type="button"
-                onClick={navigateToSignIn}
-                className="w-full px-6 py-3 bg-[#16161A] border border-purple-500 hover:bg-purple-500/10 rounded-lg font-medium transition-colors"
-              >
-                Sign in to your account
-              </button>
-            </div>
-          </form>
+      <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
+        <div className="flex flex-col items-center">
+          <Loader2 className="w-12 h-12 text-purple-500 animate-spin mb-4" />
+          <p className="text-white text-xl font-medium">Connecting...</p>
         </div>
       </div>
     );
-  }
+  };
 
   return (
     <div className="min-h-screen bg-[#16161A]">
+      <LoadingOverlay />
+      
       {/* Hero Section */}
       <div className="relative hero-gradient">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-32">
@@ -131,8 +108,7 @@ function LandingPage() {
               <span className="gradient-text"> Chatify</span>
             </h1>
             <p className="text-xl text-gray-400 mb-12 max-w-2xl mx-auto">
-              Create or join real-time chat rooms in seconds. No registration required.
-              Just start chatting with friends, family, or colleagues.
+              Create or join real-time chat rooms in seconds. Sign in with Google to start chatting.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center max-w-md mx-auto">
@@ -142,19 +118,23 @@ function LandingPage() {
                 value={roomCode}
                 onChange={(e) => setRoomCode(e.target.value)}
                 className="w-full px-6 py-3 rounded-lg bg-[#242629] border border-[#2e2e35] focus:outline-none focus:border-purple-500 text-white placeholder-gray-500"
+                disabled={isLoading}
               />
-              <button 
+              <button
                 onClick={handleJoinRoom}
-                className="w-full sm:w-auto px-8 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors"
+                className={`w-full sm:w-auto px-8 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                disabled={isLoading}
               >
+                {isLoading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
                 Join Room <ArrowRight size={20} />
               </button>
             </div>
 
             <div className="mt-6">
-              <button 
+              <button
                 onClick={handleCreateRoom}
-                className="text-purple-400 hover:text-purple-300 font-medium"
+                className={`text-purple-400 hover:text-purple-300 font-medium ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                disabled={isLoading}
               >
                 or create a new room →
               </button>
@@ -173,7 +153,6 @@ function LandingPage() {
               Instant message delivery with real-time typing indicators and notifications
             </p>
           </div>
-
           <div className="feature-card">
             <Users className="w-12 h-12 text-purple-400 mb-4" />
             <h3 className="text-xl font-semibold mb-2">Group Chats</h3>
@@ -181,7 +160,6 @@ function LandingPage() {
               Create rooms for teams, events, or casual conversations with multiple participants
             </p>
           </div>
-
           <div className="feature-card">
             <Lock className="w-12 h-12 text-purple-400 mb-4" />
             <h3 className="text-xl font-semibold mb-2">Secure</h3>
@@ -189,7 +167,6 @@ function LandingPage() {
               End-to-end encryption ensures your conversations stay private and secure
             </p>
           </div>
-
           <div className="feature-card">
             <Zap className="w-12 h-12 text-purple-400 mb-4" />
             <h3 className="text-xl font-semibold mb-2">Lightning Fast</h3>
@@ -207,13 +184,14 @@ function LandingPage() {
             Ready to start chatting?
           </h2>
           <p className="text-xl text-gray-400 mb-8 max-w-2xl mx-auto">
-            Join thousands of users who are already connecting through Chatify.
-            No downloads, no registration - just instant communication.
+            Join thousands of users connecting through Chatify with Google Sign-In.
           </p>
-          <button 
+          <button
             onClick={handleCreateRoom}
-            className="px-8 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-medium inline-flex items-center gap-2"
+            className={`px-8 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-medium inline-flex items-center gap-2 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            disabled={isLoading}
           >
+            {isLoading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
             Create a Room <ArrowRight size={20} />
           </button>
         </div>
