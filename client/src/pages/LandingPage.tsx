@@ -49,7 +49,7 @@ function LandingPage() {
   };
 
   const navigateToSignIn = () => {
-    window.location.href = '/signin';
+     navigate("/signin")
   };
 
   if (showLogin) {
