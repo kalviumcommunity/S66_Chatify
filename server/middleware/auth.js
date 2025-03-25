@@ -1,4 +1,5 @@
 const {createClient} = require('@supabase/supabase-js')
+
 require('dotenv').config();
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
@@ -23,3 +24,4 @@ const authMiddleware = async (req, res , next ) =>{
 }
 
 module.exports = authMiddleware;
+// Trigger a fresh build
