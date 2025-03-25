@@ -11,6 +11,7 @@ const ChatInterface: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    console.log('📝 Updated messages state:', messages);
     const newSocket = io('https://s66-chatify.onrender.com');
     setSocket(newSocket);
 
@@ -30,8 +31,9 @@ const ChatInterface: React.FC = () => {
     // Handle receiving previous messages
     newSocket.on('previousMessages', (prevMsgs) => {
       console.log('📜 Previous messages:', prevMsgs);
-      setMessages((existingMsgs) => [...prevMsgs, ...existingMsgs]); 
-    });
+      setMessages((existingMsgs) => [...existingMsgs, ...prevMsgs]); 
+  });
+  
     
 
     // Handle receiving new messages
