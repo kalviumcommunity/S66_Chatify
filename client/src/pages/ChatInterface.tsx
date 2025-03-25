@@ -3,111 +3,108 @@ import { useLocation } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
 
 const ChatInterface: React.FC = () => {
-  const location = useLocation();
-  const { username, roomCode } = location.state as { username: string; roomCode: string };
-  const [messages, setMessages] = useState<{ user: string; message: string }[]>([]);
-  const [input, setInput] = useState<string>('');
-  const [socket, setSocket] = useState<Socket | null>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+    const location = useLocation();
+    const { username, roomCode } = location.state as { username: string; roomCode: string };
+    const [messages, setMessages] = useState<{ user: string; message: string }[]>([]);
+    const [input, setInput] = useState<string>('');
+    const [socket, setSocket] = useState<Socket | null>(null);
+    const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    console.log('📝 Updated messages state:', messages);
-    const newSocket = io('https://s66-chatify.onrender.com');
-    setSocket(newSocket);
+    useEffect(() => {
+        const newSocket = io('https://s66-chatify.onrender.com');
+        setSocket(newSocket);
 
-    newSocket.on('connect', () => {
-      console.log('✅ Connected to server');
-      console.log(`ℹ️ Joining room: ${roomCode}`);
-      newSocket.emit('joinRoom', roomCode);
+        newSocket.on('connect', () => {
+            console.log('✅ Connected to server');
+            console.log(`ℹ️ Joining room: ${roomCode}`);
+            newSocket.emit('joinRoom', roomCode);
+        });
 
-      // Fetch previous messages when joining a room
-      // newSocket.emit('getPreviousMessages', roomCode);
-    });
+        newSocket.on('connect_error', (err) => {
+            console.error('❌ Connection error:', err);
+        });
 
-    newSocket.on('connect_error', (err) => {
-      console.error('❌ Connection error:', err);
-    });
+        newSocket.on('previousMessages', (prevMsgs) => {
+            console.log('📜 Previous messages:', prevMsgs);
+            setMessages(prevMsgs); // Replace state with previous messages
+        });
 
-    // Handle receiving previous messages
-    newSocket.on('previousMessages', (prevMsgs) => {
-      console.log('📜 Previous messages:', prevMsgs);
-      setMessages((existingMsgs) => [...existingMsgs, ...prevMsgs]); 
-  });
-  
-    
+        newSocket.on('receiveMessage', (data) => {
+            console.log('📩 Received message:', data);
+            setMessages((prev) => [...prev, data]);
+        });
 
-    // Handle receiving new messages
-    newSocket.on('receiveMessage', (data) => {
-      console.log('📩 Received message:', data);
-      setMessages((prevMessages) => [...prevMessages, data]);
-    });
+        return () => {
+            newSocket.off('receiveMessage');
+            newSocket.off('previousMessages');
+            newSocket.disconnect();
+        };
+    }, [roomCode]);
 
-    return () => {
-      newSocket.off('receiveMessage');
-      newSocket.off('previousMessages');
-      newSocket.disconnect();
+    // Log state changes for debugging
+    useEffect(() => {
+        console.log('📝 Messages state:', messages);
+    }, [messages]);
+
+    // Auto-scroll to bottom
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages]);
+
+    const sendMessage = () => {
+        if (input.trim() && socket) {
+            const messageData = { roomCode, user: username, message: input };
+            console.log('📤 Sending message:', messageData);
+            socket.emit('sendMessage', messageData);
+            setInput('');
+        }
     };
-}, [roomCode]);
 
-// Auto-scroll to bottom when new messages arrive
-useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-}, [messages]);
-
-const sendMessage = () => {
-    if (input.trim() && socket) {
-      const messageData = { roomCode, user: username, message: input };
-      console.log('📤 Sending message:', messageData);
-      socket.emit('sendMessage', messageData);
-      setInput('');
-    }
+    return (
+        <div style={styles.container}>
+            <div style={styles.header}>
+                <h2 style={styles.roomTitle}>Room: {roomCode}</h2>
+                <div style={styles.username}>Logged in as: {username}</div>
+            </div>
+            <div style={styles.messagesContainer}>
+                {messages.map((msg, index) => (
+                    <div
+                        key={index}
+                        style={msg.user === username ? styles.myMessage : styles.otherMessage}
+                    >
+                        <div style={styles.messageHeader}>
+                            <strong>{msg.user}</strong>
+                        </div>
+                        <div style={styles.messageContent}>
+                            {msg.message}
+                        </div>
+                    </div>
+                ))}
+                <div ref={messagesEndRef} />
+            </div>
+            <div style={styles.inputContainer}>
+                <input
+                    type="text"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+                    style={styles.input}
+                    placeholder="Type a message..."
+                />
+                <button
+                    onClick={sendMessage}
+                    style={styles.sendButton}
+                    disabled={!input.trim()}
+                >
+                    Send
+                </button>
+            </div>
+        </div>
+    );
 };
 
 
-  return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <h2 style={styles.roomTitle}>Room: {roomCode}</h2>
-        <div style={styles.username}>Logged in as: {username}</div>
-      </div>
-      
-      <div style={styles.messagesContainer}>
-        {messages.map((msg, index) => (
-          <div 
-            key={index} 
-            style={msg.user === username ? styles.myMessage : styles.otherMessage}
-          >
-            <div style={styles.messageHeader}>
-              <strong>{msg.user}</strong>
-            </div>
-            <div style={styles.messageContent}>
-              {msg.message}
-            </div>
-          </div>
-        ))}
-        <div ref={messagesEndRef} />
-      </div>
-      
-      <div style={styles.inputContainer}>
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-          style={styles.input}  
-          placeholder="Type a message..."
-        />
-        <button 
-          onClick={sendMessage} 
-          style={styles.sendButton}
-          disabled={!input.trim()}
-        >
-          Send
-        </button>
-      </div>
-    </div>
-  );
-};
+
 
 
 // Styles

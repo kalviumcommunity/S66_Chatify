@@ -1,5 +1,6 @@
 render: https://s66-chatify.onrender.com
-cloudflare-  https://c7ca101f.chatify-54f.pages.dev/ 
+
+frontend -  https://chatify-eight-rouge.vercel.app/
 # Chatify
 
 ## Project Overview
